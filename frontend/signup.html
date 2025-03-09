@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Document Scanning Website</title>
+  <link rel="stylesheet" href="signup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="logo">
+        <img src="logo.png" alt="Document Scanning Logo">
+      </div>
+      <h2>Create an Account</h2>
+      <p>Sign up to start scanning your documents.</p>
+      <form id="signup-form">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        <div class="input-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+        </div>
+        <div class="input-group">
+          <label for="role">Enter your Role</label>
+          <input type="text" id="role" name="role" placeholder="Enter your role" required>
+        </div>
+        <button type="submit" class="login-btn">Sign Up</button>
+      </form>
+      <div class="links">
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+   document.getElementById('signup-form').addEventListener('submit', async function (event) {
+  event.preventDefault(); 
+
+  // Get form data
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  const role = document.getElementById('role').value;
+
+
+  if (password !== confirmPassword) {
+    alert('Passwords do not match!');
+    return;
+  }
+
+
+  const data = {
+    username: username,
+    password: password,
+    role: role,
+  };
+
+  try {
+    // Send a POST request to the backend
+    const response = await fetch('http://localhost:3000/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    // Parse the response as JSON
+    const result = await response.json();
+
+    if (response.ok) {
+      alert('Signup successful!');
+      // Redirect to login page or another page
+      window.location.href = 'login.html';
+    } else {
+      // Handle backend errors
+      alert(`Signup failed: ${result.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('Error during signup:', error);
+    alert('An error occurred during signup. Please try again.');
+  }
+});
+  </script>
+</body>
+</html>

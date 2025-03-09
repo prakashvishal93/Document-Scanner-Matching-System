@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Document Scanning Website</title>
+  <link rel="stylesheet" href="login.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="logo">
+        <img src="logo.png" alt="Document Scanning Logo">
+      </div>
+      <h2>Welcome Back!</h2>
+      <p>Login to access your documents.</p>
+      <form id="login-form">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="login-btn">Login</button>
+      </form>
+      <div class="links">
+        <a href="#">Forgot Password?</a>
+        <a href="./signup.html">Create an Account</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  document.getElementById('login-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+          const response = await fetch('http://localhost:3000/auth/login', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, password })
+          });
+
+          const result = await response.json();
+          console.log("Server Response:", result); // Debugging
+
+          if (response.ok && result.token) {
+              // Store token in localStorage
+              localStorage.setItem('token', result.token);
+              console.log("Token Stored in LocalStorage:", localStorage.getItem('token'));
+
+              // Redirect to main page
+              window.location.href = 'main.html';
+          } else {
+              alert(`Login failed: ${result.message || "Invalid credentials"}`);
+          }
+      } catch (error) {
+          console.error('Login error:', error);
+          alert('Login failed. Please try again.');
+      }
+  });
+</script>
+</body>
+</html>

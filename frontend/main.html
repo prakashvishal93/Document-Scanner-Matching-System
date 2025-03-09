@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Scanner Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+       
+        .navbar {
+            background: #ffffff;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .menu-item {
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .menu-item:hover {
+            background: #f8f9fa;
+        }
+
+        .main-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .upload-section {
+            border: 2px dashed #ced4da;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .credit-requests {
+            margin-top: 2rem;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .request-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scan-history-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            background: #2d3436;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #434b4d;
+        }
+
+        .main-content > div {
+            display: none;
+        }
+        #dashboard-content {
+            display: block;
+        }
+
+        #scan-response {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .success {
+            background: #e6fffa;
+            color: #2d7a6e;
+            border: 1px solid #2d7a6e;
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #c53030;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: #2d3436;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* New CSS for Show More functionality */
+        .text-toggle-container {
+            position: relative;
+            margin: 5px 0;
+        }
+        .truncated-text {
+            display: inline;
+        }
+        .full-text {
+            display: none;
+        }
+        .show-more-btn {
+            background: none;
+            border: none;
+            color: #2d3436;
+            padding: 0;
+            margin-left: 5px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Match Data Styling */
+        .match-data-container {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+
+        .match-data-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .match-data-item h5 {
+            margin-bottom: 0.5rem;
+            color: #2d3436;
+        }
+
+        .match-data-item p {
+            margin: 0.25rem 0;
+            color: #636e72;
+        }
+
+        .match-data-item .similarity {
+            font-weight: 600;
+            color: #2d7a6e;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">DocScan Pro</div>
+        <div class="user-info">
+            <span id="username-display"></span>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="menu-item active" onclick="showContent('dashboard')">📊 Dashboard</div>
+            <div class="menu-item" onclick="showContent('scan')">📁 Scan Documents</div>
+            <div class="menu-item" onclick="showContent('history')">🕒 Scan History</div>
+            <div class="menu-item admin-only" onclick="showContent('requests')">🛎 Credit Requests</div>
+            <div class="menu-item admin-only" onclick="showContent('analytics')">📈 Analytics</div>
+        </div>
+
+        <div class="main-content" id="main-content">
+            <!-- Dashboard Content -->
+            <div id="dashboard-content">
+                <h2>Welcome, <span id="dashboard-username"></span></h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Remaining Credits</h3>
+                        <p id="credits-count">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Scans</h3>
+                        <p id="today-scans">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Content -->
+            <div id="scan-content">
+                <div class="upload-section">
+                    <h3>Upload Document</h3>
+                    <input type="file" id="document-upload" accept=".txt">
+                    <p>Supported format: .txt</p>
+                    <button type="button" onclick="uploadDocument()" id="upload-button">
+                        <span id="button-text">Upload file</span>
+                    </button>
+                    <div id="scan-response"></div>
+                </div>
+            </div>
+
+            <!-- History Content -->
+            <div id="history-content">
+                <h3>Scan History</h3>
+                <div id="scan-history-list"></div>
+            </div>
+
+            <!-- Admin Content -->
+            <div id="requests-content">
+                <div class="credit-requests">
+                    <h3>Pending Credit Requests</h3>
+                    <div id="requests-list"></div>
+                </div>
+            </div>
+
+            <!-- Analytics Content -->
+            <div id="analytics-content">
+                <h3>System Analytics</h3>
+                <div id="analytics-data">
+                    <h4>Match Data</h4>
+                    <div id="match-data" class="match-data-container">
+                        <!-- Match data will be dynamically inserted here -->
+                    </div>
+                    <h4>Analytics Data</h4>
+                    <div id="analytics-results" class="match-data-container">
+                        <!-- Analytics data will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const authToken = localStorage.getItem('token');
+        if (!authToken) window.location.href = 'login.html';
+
+        let currentUser = null;
+
+        async function initializeDashboard() {
+            try {
+                const response = await fetch('http://localhost:3000/user/profile', {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('Session expired');
+                    throw new Error(data.error || 'Failed to load profile');
+                }
+
+                currentUser = data.user;
+
+                // Update UI
+                document.getElementById('credits-count').textContent = currentUser.credits;
+                document.getElementById('today-scans').textContent = currentUser.todayScans;
+
+                // Document history with Show More functionality
+                const historyList = document.getElementById('scan-history-list');
+                historyList.innerHTML = data.documents.map(doc => `
+                    <div class="scan-history-item">
+                        <div>${new Date(doc.upload_date).toLocaleString()} - ${doc.filename}</div>
+                        <div class="text-toggle-container">
+                            <span class="truncated-text">${doc.content.substring(0, 50)}...</span>
+                            <span class="full-text">${doc.content}</span>
+                            <button class="show-more-btn" onclick="toggleText(this)">Show More</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Admin features
+                if(currentUser.role === 'admin') {
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+                    loadCreditRequests(data.requests);
+                }
+
+            } catch (error) {
+                alert(error.message);
+                logout();
+            }
+        }
+
+        async function uploadDocument() {
+            const fileInput = document.getElementById('document-upload');
+            const uploadButton = document.getElementById('upload-button');
+            const buttonText = document.getElementById('button-text');
+            const scanResponse = document.getElementById('scan-response');
+
+            if (!fileInput.files.length) return;
+
+            try {
+                uploadButton.disabled = true;
+                buttonText.innerHTML = 'Uploading... <div class="loading"></div>';
+
+                const formData = new FormData();
+                formData.append('document', fileInput.files[0]);
+                formData.append('userId', currentUser.id);
+
+                const response = await fetch('http://localhost:3000/scan', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(await response.text());
+                
+                const result = await response.json();
+                
+                scanResponse.className = 'success';
+                scanResponse.innerHTML = `
+                    <p>Analysis: ${result.analysis}</p>
+                    <p>Original Text: ${result.originalText}</p>
+                `;
+
+                // Display match data in analytics section
+                if (result.match) {
+                    displayMatchData(result.match);
+                }
+
+                await initializeDashboard();
+
+            } catch (error) {
+                scanResponse.className = 'error';
+                scanResponse.innerHTML = `Error: ${error.message}`;
+            } finally {
+                fileInput.value = '';
+                uploadButton.disabled = false;
+                buttonText.textContent = 'Upload file';
+            }
+        }
+
+        function displayMatchData(matchData) {
+            const matchDataContainer = document.getElementById('match-data');
+            matchDataContainer.innerHTML = `
+                <div class="match-data-item">
+                    <h5>Match Details</h5>
+                    <p><strong>Filename:</strong> ${matchData.filename}</p>
+                    <p><strong>Upload Date:</strong> ${new Date(matchData.upload_date).toLocaleString()}</p>
+                    <p><strong>Content:</strong> ${matchData.content}</p>
+                    <p><strong>Extracted Text:</strong> ${matchData.extracted_text}</p>
+                    <p class="similarity"><strong>Similarity:</strong> ${matchData.similarity}</p>
+                </div>
+            `;
+        }
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('http://localhost:3000/analytics', {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch analytics data');
+
+                const data = await response.json();
+                const analyticsResults = document.getElementById('analytics-results');
+                analyticsResults.innerHTML = `
+                    <div class="match-data-item">
+                        <h5>Analytics Overview</h5>
+                        <p><strong>Success:</strong> ${data.success}</p>
+                        <p><strong>Original Text:</strong> ${data.originalText}</p>
+                        <p><strong>Match Filename:</strong> ${data.match.filename}</p>
+                        <p><strong>Match Content:</strong> ${data.match.content}</p>
+                        <p><strong>Match Similarity:</strong> ${data.match.similarity}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        function toggleText(button) {
+            const container = button.parentElement;
+            const truncated = container.querySelector('.truncated-text');
+            const fullText = container.querySelector('.full-text');
+            
+            if (truncated.style.display !== 'none') {
+                truncated.style.display = 'none';
+                fullText.style.display = 'inline';
+                button.textContent = 'Show Less';
+            } else {
+                truncated.style.display = 'inline';
+                fullText.style.display = 'none';
+                button.textContent = 'Show More';
+            }
+        }
+
+        async function loadCreditRequests(requests) {
+            const requestsList = document.getElementById('requests-list');
+            requestsList.innerHTML = requests.map(req => `
+                <div class="request-item">
+                    <div>
+                        <strong>${req.username}</strong><br>
+                        Requested: ${req.amount} credits<br>
+                        ${new Date(req.timestamp).toLocaleString()}
+                    </div>
+                    <div>
+                        <button onclick="handleCreditRequest('${req.id}', true)">Approve</button>
+                        <button onclick="handleCreditRequest('${req.id}', false)">Deny</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleCreditRequest(requestId, approve) {
+            try {
+                const response = await fetch(`http://localhost:3000/admin/requests/${requestId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: approve ? 'approve' : 'deny' })
+                });
+
+                if (!response.ok) throw new Error('Request failed');
+                await initializeDashboard();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function showContent(contentId) {
+            document.querySelectorAll('.main-content > div').forEach(el => el.style.display = 'none');
+            document.getElementById(`${contentId}-content`).style.display = 'block';
+
+            // Load analytics data when the analytics section is shown
+            if (contentId === 'analytics') {
+                loadAnalytics();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize dashboard on load
+        initializeDashboard();
+    </script>
+</body>
+</html>
